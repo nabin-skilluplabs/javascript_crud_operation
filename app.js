@@ -17,13 +17,36 @@ async function getAllContacts() {
 function populateTodos(data) {
   const todoListElement = document.getElementById('todo_list');
   const todoHtml = data
-    .map((todo) => {
-      return `<li>${todo.title}</li>`;
+    .map((todo, index) => {
+      return `<li><form><input type="text" value="${todo.title}" id="todo_${index}" name="todo_${index}">
+      <button onclick="changeTodo(event, ${index}, '${todo.id}')">Update</button></form>
+      </li>`;
     })
     .join('');
   todoListElement.innerHTML = todoHtml;
 }
 
+async function changeTodo(event, index, id) {
+  event.preventDefault();
+  const todoElement = document.getElementById('todo_' + index);
+  const todo = todoElement.value;
+  await updateTodo(id, todo);
+  await loadTodos();
+}
+
+async function updateTodo(id, title) {
+  const response = await fetch(API_ENDPOINT + '/' + id, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      title,
+    }),
+  });
+  const data = await response.json();
+  return data;
+}
 async function createToDo(todo) {
   const response = await fetch(API_ENDPOINT, {
     method: 'POST',
